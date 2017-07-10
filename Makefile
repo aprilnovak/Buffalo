@@ -54,3 +54,4 @@ include            $(FRAMEWORK_DIR)/app.mk
 
 ###############################################################################
 # Additional special case targets should be added here
+ADDITIONAL_LIBS := $(MOON_DIR)/lib/libmoon-dbg.so
