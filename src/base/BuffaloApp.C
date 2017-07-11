@@ -4,6 +4,9 @@
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
 
+// auxkernels
+#include "KappaFissionToHeatSource.h"
+
 template <>
 InputParameters
 validParams<BuffaloApp>()
@@ -46,6 +49,7 @@ BuffaloApp__registerObjects(Factory & factory)
 void
 BuffaloApp::registerObjects(Factory & factory)
 {
+  registerAuxKernel(KappaFissionToHeatSource);
 }
 
 // External entry point for dynamic syntax association
