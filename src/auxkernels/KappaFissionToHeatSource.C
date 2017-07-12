@@ -7,8 +7,8 @@ InputParameters validParams<KappaFissionToHeatSource>()
   params.addRequiredCoupledVar("kappa_fission_source",
     "Continuous field representing the kappa-fisison source (eV/source particle)");
   params.addRequiredParam<Real>("power", "pin power (W)");
-  params.addRequiredParam<std::string>("kappa_fission_pp",
-    "The name of the postprocessor that integrates the kappa-fission distribution.");
+//  params.addRequiredParam<std::string>("kappa_fission_pp",
+//    "The name of the postprocessor that integrates the kappa-fission distribution.");
   params.addRequiredParam<std::string>("volume_pp",
     "The name of the postprocessor that calculates volume.");
   return params;
@@ -18,8 +18,8 @@ KappaFissionToHeatSource::KappaFissionToHeatSource(const InputParameters & param
     AuxKernel(parameters),
     _kappa_fission(coupledValue("kappa_fission_source")),
     _power(parameters.get<Real>("power")),
-    _kappa_fission_pp(getPostprocessorValueByName(
-      parameters.get<std::string>("kappa_fission_pp"))),
+  //  _kappa_fission_pp(getPostprocessorValueByName(
+  //    parameters.get<std::string>("kappa_fission_pp"))),
     _volume_pp(getPostprocessorValueByName(parameters.get<std::string>("volume_pp")))
 {
 }
@@ -38,8 +38,15 @@ KappaFissionToHeatSource::computeValue()
          accounts for energy produced in the fuel)
        - account for a non-constant user power */
 
-  if (_kappa_fission_pp < 0.000001)
+  // NOTE: the commented-out section below would require an integral postprocessor
+  // that itself relies on this kernel to have completed, which is impossible
+  // within the MOOSE framework.
+  /*if (_kappa_fission_pp < 0.000001)
     return 0.0;
   else
-    return _kappa_fission[_qp] * _power / (_kappa_fission_pp * _volume_pp);
+    return _kappa_fission[_qp] * _power / (_kappa_fission_pp * _volume_pp);*/
+
+  Real E_per_fission = 200.0E6;
+  Real particles_per_fission = 2.45;
+  return _kappa_fission[_qp] * _power * particles_per_fission / E_per_fission;
 }

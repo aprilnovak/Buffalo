@@ -19,7 +19,7 @@ protected:
   virtual Real computeValue();
   const VariableValue & _kappa_fission;
   Real _power;
-  const PostprocessorValue & _kappa_fission_pp;
+//  const PostprocessorValue & _kappa_fission_pp;
   const PostprocessorValue & _volume_pp;
 };
 
