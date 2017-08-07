@@ -18,8 +18,9 @@ public:
 protected:
   virtual Real computeValue();
   const VariableValue & _kappa_fission;
-  Real _power;
-//  const PostprocessorValue & _kappa_fission_pp;
+  const Real & _power;
+  const bool & _one_group_PKE;
+  std::vector<VariableValue *> _keff;
   const PostprocessorValue & _volume_pp;
 };
 
