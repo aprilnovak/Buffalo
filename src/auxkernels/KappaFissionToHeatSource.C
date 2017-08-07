@@ -1,4 +1,5 @@
 #include "KappaFissionToHeatSource.h"
+#include <iostream>
 #include <math.h>
 
 template<>
@@ -10,7 +11,7 @@ InputParameters validParams<KappaFissionToHeatSource>()
   params.addRequiredParam<Real>("power", "initial pin power (W)");
   params.addParam<bool>("one_group_PKE", false, "whether to use a one delayed "
     "neutron group approximation for transient power");
-  params.addRequiredCoupledVar("keff", "Name of the scalar aux variable "
+  params.addCoupledVar("keff", "Name of the scalar aux variable "
     "holding keff");
   params.addRequiredParam<std::string>("volume_pp",
     "The name of the postprocessor that calculates volume.");
@@ -24,7 +25,8 @@ KappaFissionToHeatSource::KappaFissionToHeatSource(const InputParameters & param
     _one_group_PKE(getParam<bool>("one_group_PKE")),
     _volume_pp(getPostprocessorValueByName(parameters.get<std::string>("volume_pp")))
 {
-  _keff.push_back(&coupledScalarValue("keff", 0));
+  if (isParamValid("keff"))
+    _keff.push_back(&coupledScalarValue("keff", 0));
 }
 
 KappaFissionToHeatSource::~KappaFissionToHeatSource()
@@ -52,6 +54,8 @@ KappaFissionToHeatSource::computeValue()
        - the flux is separable in both space and time, and the spatial dependence
          is given by the first eigenfunction (characterized by the geometric
          buckling)
+       - the delayed neutron precursor distribution has the same spatial
+         distribution as the neutron population
 
      Note that this model is not intended to provide very accurate results, but
      only to provide some real-physics-like response to changes in temperature
@@ -80,12 +84,25 @@ KappaFissionToHeatSource::computeValue()
     // from page 243, Duderstadt & Hamilton
     Real Lambda = 10.0e-3;
 
-    // reactivity
-    Real rho = ((*_keff[0])[0] - 1.0) / (*_keff[0])[0];
+    Real keff;
+    if (isParamValid("keff"))
+      keff = (*_keff[0])[0];
+    else
+      keff = 1.0;
 
-    Real term1 = (beta / (beta - rho)) * exp(lambda * rho * _t / (beta - rho));
-    Real term2 = - (rho / (beta - rho)) * exp(- (beta - rho) * _t / Lambda);
-    multiplier = term1 + term2;
+    // reactivity
+    Real rho = (keff - 1.0) / keff;
+
+    Real term1 = Lambda * lambda + beta - rho;
+    Real term2 = term1 * term1 + 4 * Lambda * lambda * rho;
+    Real w1 = (- term1 + sqrt(term2)) / (2 * Lambda);
+    Real w2 = (- term1 - sqrt(term2)) / (2 * Lambda);
+
+    Real term3 = ((w1 + lambda) * w2 / (lambda * (w2 - w1))) * exp(w1 * _t);
+    Real term4 = ((w2 + lambda) * w1 / (lambda * (w1 - w2))) * exp(w2 * _t);
+
+    multiplier = term3 + term4;
+    if (multiplier < 0) mooseWarning("Negative fission power multiplier!");
   }
 
   Real E_per_fission = 200.0E6;
