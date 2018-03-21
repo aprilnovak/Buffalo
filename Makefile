@@ -29,7 +29,7 @@ ALL_MODULES         := no
 CHEMICAL_REACTIONS  := no
 CONTACT             := no
 FLUID_PROPERTIES    := no
-HEAT_CONDUCTION     := no
+HEAT_CONDUCTION     := yes
 MISC                := no
 NAVIER_STOKES       := no
 PHASE_FIELD         := no
@@ -41,6 +41,7 @@ TENSOR_MECHANICS    := no
 WATER_STEAM_EOS     := no
 XFEM                := no
 POROUS_FLOW         := no
+FUNCTIONAL_EXPANSION := yes
 
 include $(MOOSE_DIR)/modules/modules.mk
 ###############################################################################
@@ -54,4 +55,4 @@ include            $(FRAMEWORK_DIR)/app.mk
 
 ###############################################################################
 # Additional special case targets should be added here
-ADDITIONAL_LIBS := $(MOON_DIR)/lib/libmoon-dbg.so
+#ADDITIONAL_LIBS := $(MOON_DIR)/lib/libmoon-dbg.so
